@@ -1,0 +1,20 @@
+# Frontend
+learning_platform_fronted/leetclone-frontend/node_modules/
+learning_platform_fronted/leetclone-frontend/dist/
+learning_platform_fronted/leetclone-frontend/.env
+
+# Backend
+learning_platform_Backend/venv/
+learning_platform_Backend/__pycache__/
+learning_platform_Backend/db.sqlite3
+learning_platform_Backend/.env
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
