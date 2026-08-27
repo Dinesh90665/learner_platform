@@ -1,6 +1,8 @@
-import Navbar from "./components/navbar"; //Imports the Navbar component from the components folder.
+
+
+import Navbar from "./components/Navbar";
 // React will display whatever is returned by Navbar.jsx.
-import AppRoutes from "./routes/AppRoutes"; //Imports the routing component.
+import AppRoutes from "./routes/AppRoutes";
 // AppRoutes usually contains all your application's routes using react-router-dom.
                  
 function App()   //Defines the main App component.
@@ -10,6 +12,7 @@ function App()   //Defines the main App component.
     <>   
     <Navbar/>
     <AppRoutes/>
+  
     </>
   );
 }

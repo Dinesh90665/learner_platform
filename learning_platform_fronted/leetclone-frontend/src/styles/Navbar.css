@@ -1,0 +1,412 @@
+/* =========================================
+   NAVBAR
+========================================= */
+
+.app-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+
+    width: 100%;
+    height: 72px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 32px;
+
+    background: rgba(255, 255, 255, 0.96);
+    border-bottom: 1px solid #e8edf3;
+
+    backdrop-filter: blur(12px);
+}
+
+/* =========================================
+   LEFT
+========================================= */
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    flex: 1;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    text-decoration: none;
+    color: #0f172a;
+}
+
+.brand-logo {
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 11px;
+
+    background: #111827;
+    color: #ffffff;
+
+    font-size: 13px;
+    font-weight: 800;
+
+    box-shadow: 0 5px 14px rgba(15, 23, 42, 0.12);
+}
+
+.brand-logo span:nth-child(2) {
+    color: #3b82f6;
+}
+
+.brand-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-content strong {
+    color: #0f172a;
+
+    font-size: 18px;
+    line-height: 1;
+
+    font-weight: 800;
+    letter-spacing: -0.4px;
+}
+
+.brand-content small {
+    margin-top: 5px;
+
+    color: #94a3b8;
+
+    font-size: 8px;
+    font-weight: 700;
+
+    letter-spacing: 1px;
+}
+
+/* =========================================
+   CENTER NAVIGATION
+========================================= */
+
+.navbar-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    flex: 2;
+}
+
+.navbar-center a {
+    position: relative;
+
+    padding: 10px 14px;
+
+    border-radius: 9px;
+
+    color: #64748b;
+    text-decoration: none;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    transition: all 0.2s ease;
+}
+
+/* Hover */
+
+.navbar-center a:hover {
+    color: #2563eb;
+    background: #f8fafc;
+}
+
+/* Active-looking underline on hover */
+
+.navbar-center a::after {
+    content: "";
+
+    position: absolute;
+
+    left: 14px;
+    right: 14px;
+    bottom: 3px;
+
+    height: 2px;
+
+    border-radius: 10px;
+
+    background: #2563eb;
+
+    transform: scaleX(0);
+    transform-origin: center;
+
+    transition: transform 0.2s ease;
+}
+
+.navbar-center a:hover::after {
+    transform: scaleX(1);
+}
+
+/* =========================================
+   RIGHT
+========================================= */
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    flex: 1;
+}
+
+/* Login */
+
+.navbar-login {
+    padding: 9px 13px;
+
+    border-radius: 8px;
+
+    color: #475569;
+    text-decoration: none;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    transition: all 0.2s ease;
+}
+
+.navbar-login:hover {
+    color: #2563eb;
+    background: #f8fafc;
+}
+
+/* Register */
+
+.navbar-register {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 98px;
+    height: 40px;
+
+    padding: 0 17px;
+
+    border-radius: 9px;
+
+    background: #2563eb;
+    color: #ffffff;
+
+    text-decoration: none;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    box-shadow: 0 7px 18px rgba(37, 99, 235, 0.16);
+
+    transition: all 0.2s ease;
+}
+
+.navbar-register:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+
+    box-shadow: 0 9px 22px rgba(37, 99, 235, 0.22);
+}
+
+/* =========================================
+   USER PROFILE
+========================================= */
+
+.navbar-profile {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    padding: 4px 11px 4px 5px;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 11px;
+
+    background: #ffffff;
+
+    color: #1e293b;
+    text-decoration: none;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    transition: all 0.2s ease;
+}
+
+.navbar-profile:hover {
+    border-color: #cbd5e1;
+
+    box-shadow:
+        0 7px 20px rgba(15, 23, 42, 0.07);
+}
+
+.navbar-avatar {
+    width: 33px;
+    height: 33px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background: #eff6ff;
+    color: #2563eb;
+
+    font-size: 13px;
+    font-weight: 800;
+}
+
+/* Logout */
+
+.logout-button {
+    height: 38px;
+
+    padding: 0 13px;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+
+    background: #ffffff;
+    color: #64748b;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+.logout-button:hover {
+    color: #dc2626;
+
+    border-color: #fecaca;
+
+    background: #fff7f7;
+}
+
+/* =========================================
+   MOBILE TOGGLE
+========================================= */
+
+.mobile-menu-toggle {
+    display: none;
+
+    width: 38px;
+    height: 38px;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+
+    background: #ffffff;
+
+    color: #334155;
+
+    cursor: pointer;
+
+    font-size: 18px;
+
+    transition: 0.2s ease;
+}
+
+.mobile-menu-toggle:hover {
+    background: #f8fafc;
+    color: #2563eb;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1050px) {
+
+    .app-navbar {
+        padding: 0 20px;
+    }
+
+    .navbar-center {
+        gap: 2px;
+    }
+
+    .navbar-center a {
+        padding: 9px 10px;
+        font-size: 12px;
+    }
+
+    .brand-content small {
+        display: none;
+    }
+}
+
+@media (max-width: 850px) {
+
+    .navbar-center {
+        display: none;
+    }
+
+    .mobile-menu-toggle {
+        display: block;
+    }
+
+    .navbar-left {
+        flex: 1;
+    }
+
+    .navbar-right {
+        flex: none;
+    }
+
+    .navbar-profile span {
+        display: none;
+    }
+
+    .logout-button {
+        display: none;
+    }
+}
+
+@media (max-width: 500px) {
+
+    .app-navbar {
+        height: 64px;
+        padding: 0 15px;
+    }
+
+    .brand-logo {
+        width: 36px;
+        height: 36px;
+    }
+
+    .brand-content strong {
+        font-size: 16px;
+    }
+
+    .navbar-login {
+        display: none;
+    }
+
+    .navbar-register {
+        min-width: 88px;
+        height: 36px;
+        padding: 0 12px;
+
+        font-size: 12px;
+    }
+}

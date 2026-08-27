@@ -6,9 +6,12 @@ import DashboardPage from "../pages/DashboardPage";
 import HomePage from "../pages/HomePage";
 import LeaderboardPage from "../pages/LeaderboardPage";
 import LoginPage from "../pages/LoginPage";
+import ProblemDetailPage from "../pages/ProblemDetailPage";
 import ProblemPage from "../pages/ProblemPage";
 import ProfilePage from "../pages/ProfilePage";
 import RegisterPage from "../pages/RegisterPage";
+import SolveProblemPage from "../pages/SolveProblemPage";
+import SubmissionHistoryPage from "../pages/SubmissionHistoryPage";
 // Each import represents a React component.
 
 
@@ -25,6 +28,14 @@ function AppRoutes()  //This is just another React component.
             <Route path="/dashboard" element={<DashboardPage/>}/>
             <Route path="/leaderboard" element={<LeaderboardPage/>} />
             <Route path="/profile" element={<ProfilePage/>}/>
+            <Route path="/problems/:slug" element={<ProblemDetailPage />}/>
+            <Route path="/problems/:slug/solve" element={<SolveProblemPage />}/>
+            <Route path="/submissions" element={<SubmissionHistoryPage />}
+
+
+
+/>
+
         </Routes>
     );
 }
