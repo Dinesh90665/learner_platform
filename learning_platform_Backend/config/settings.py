@@ -98,7 +98,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 
 
-
+import config
 from decouple import config
 
 DATABASES = {
