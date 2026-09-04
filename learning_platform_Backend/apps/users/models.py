@@ -23,3 +23,35 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+    
+
+from django.conf import settings
+from django.db import models
+
+
+class UserStreak(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="streak",
+    )
+
+    current_streak = models.PositiveIntegerField(
+        default=0
+    )
+
+    longest_streak = models.PositiveIntegerField(
+        default=0
+    )
+
+    last_solved_date = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    def __str__(self):
+        return f"{self.user.username} - {self.current_streak} day streak"

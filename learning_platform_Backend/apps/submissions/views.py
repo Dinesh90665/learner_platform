@@ -1,11 +1,44 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from datetime import timedelta
+
+from django.utils import timezone
+
+from apps.users.models import UserStreak
 
 from .models import Submission
 from .serializers import SubmissionSerializer
 from .judge import judge_submission
 
+def update_user_streak(user):
+    today = timezone.localdate()
+
+    streak, _ = UserStreak.objects.get_or_create(
+        user=user
+    )
+
+    if streak.last_solved_date == today:
+        return streak
+
+    if (
+        streak.last_solved_date
+        == today - timedelta(days=1)
+    ):
+        streak.current_streak += 1
+    else:
+        streak.current_streak = 1
+
+    if streak.current_streak > streak.longest_streak:
+        streak.longest_streak = (
+            streak.current_streak
+        )
+
+    streak.last_solved_date = today
+
+    streak.save()
+
+    return streak
 
 class SubmissionCreateView(generics.CreateAPIView):
 
@@ -36,6 +69,8 @@ class SubmissionCreateView(generics.CreateAPIView):
         submission.execution_time = result["execution_time"]
 
         submission.save()
+        if submission.status == "accepted":
+            update_user_streak(request.user)
 
         return Response(
             self.get_serializer(submission).data,
@@ -224,4 +259,51 @@ class DashboardView(generics.GenericAPIView):
             },
 
             "recent_submissions": recent_data,
+        })
+
+
+class ProblemProgressView(generics.GenericAPIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        solved_problem_ids = (
+            Submission.objects
+            .filter(
+                user=request.user,
+                status="accepted",
+            )
+            .values_list(
+                "problem_id",
+                flat=True,
+            )
+            .distinct()
+        )
+
+        return Response({
+            "solved_problem_ids": list(
+                solved_problem_ids
+            )
+        })
+    
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from apps.users.models import UserStreak
+
+
+class UserStreakView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        streak, _ = UserStreak.objects.get_or_create(
+            user=request.user
+        )
+
+        return Response({
+            "current_streak": streak.current_streak,
+            "longest_streak": streak.longest_streak,
+            "last_solved_date": streak.last_solved_date,
         })

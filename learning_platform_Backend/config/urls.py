@@ -39,6 +39,14 @@ urlpatterns = [
         "api/leaderboard/",
         include("apps.leaderboard.urls"),
     ),
+    path(
+    "api/discussions/",
+    include("apps.discussions.urls"),
+),
+    path(
+    "api/ai-assistant/",
+    include("apps.ai_assistant.urls"),
+),
 ]
 
 

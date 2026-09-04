@@ -1,5 +1,12 @@
 from django.urls import path
-
+from .views import (
+    SubmissionCreateView,
+    SubmissionRunView,
+    SubmissionHistoryView,
+    DashboardView,
+    ProblemProgressView,
+)
+from .views import UserStreakView
 from .views import (
     SubmissionCreateView,
     SubmissionRunView,
@@ -31,4 +38,15 @@ urlpatterns = [
         DashboardView.as_view(),
         name="dashboard",
     ),
+    path(
+    "progress/",
+    ProblemProgressView.as_view(),
+    name="problem-progress",
+),
+   path(
+    "streak/",
+    UserStreakView.as_view(),
+    name="user-streak",
+),
+   
 ]

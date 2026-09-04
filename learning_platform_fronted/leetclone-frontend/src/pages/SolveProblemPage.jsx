@@ -1,42 +1,101 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
+import AIAssistant from "../components/AiAssistant";
 import CodeEditor from "../components/CodeEditor";
 import "../styles/SolveProblemPage.css";
+
+const starterCode = {
+    python: `def solve():
+    # Write your solution here
+    pass
+
+solve()
+`,
+
+    cpp: `#include <iostream>
+using namespace std;
+
+int main() {
+    // Write your solution here
+
+    return 0;
+}
+`,
+
+    java: `public class Main {
+    public static void main(String[] args) {
+        // Write your solution here
+    }
+}
+`,
+};
 
 function SolveProblemPage() {
     const { slug } = useParams();
 
     const [problem, setProblem] = useState(null);
+
+    const [language, setLanguage] = useState("python");
+
+    const [sourceCode, setSourceCode] = useState(
+        starterCode.python
+    );
+
+    const [lastError, setLastError] = useState("");
+
     const [loading, setLoading] = useState(true);
+
     const [error, setError] = useState("");
 
     useEffect(() => {
-        const fetchProblem = async () => {
-            try {
-                setLoading(true);
-                setError("");
-
-                const response = await axiosClient.get(
-                    `problems/${slug}/`
-                );
-
-                setProblem(response.data);
-            } catch (err) {
-                console.error(err);
-
-                if (err.response?.status === 404) {
-                    setError("Problem not found.");
-                } else {
-                    setError("Unable to load problem.");
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchProblem();
     }, [slug]);
+
+    const fetchProblem = async () => {
+        try {
+            setLoading(true);
+            setError("");
+
+            const response = await axiosClient.get(
+                `problems/${slug}/`
+            );
+
+            setProblem(response.data);
+        } catch (err) {
+            console.error("Problem loading error:", err);
+
+            setError(
+                err.response?.status === 404
+                    ? "Problem not found."
+                    : "Unable to load problem."
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleLanguageChange = (newLanguage) => {
+        setLanguage(newLanguage);
+
+        setSourceCode(
+            starterCode[newLanguage]
+        );
+
+        setLastError("");
+    };
+
+    const handleCodeChange = (newCode) => {
+        setSourceCode(newCode);
+    };
+
+    const handleResult = (result) => {
+        if (!result) {
+            return;
+        }
+
+        setLastError(result.error || "");
+    };
 
     if (loading) {
         return (
@@ -49,14 +108,24 @@ function SolveProblemPage() {
 
     if (error || !problem) {
         return (
-            <div className="solve-error">
-                <h2>
-                    {error || "Problem not found."}
-                </h2>
+            <div className="solve-error-page">
 
-                <Link to="/problems">
-                    ← Back to Problems
-                </Link>
+                <div className="solve-error-card">
+
+                    <div className="solve-error-icon">
+                        !
+                    </div>
+
+                    <h2>
+                        {error || "Problem not found"}
+                    </h2>
+
+                    <Link to="/problems">
+                        ← Back to Problems
+                    </Link>
+
+                </div>
+
             </div>
         );
     }
@@ -64,7 +133,10 @@ function SolveProblemPage() {
     return (
         <div className="solve-page">
 
-            {/* Header */}
+            {/* =================================
+                HEADER
+            ================================= */}
+
             <header className="solve-header">
 
                 <Link
@@ -74,15 +146,15 @@ function SolveProblemPage() {
                     ← Back to Problem
                 </Link>
 
-                <div className="solve-problem-title">
+                <div className="solve-title">
 
-                    <span
+                    <div
                         className={`solve-difficulty ${
                             problem.difficulty?.toLowerCase()
                         }`}
                     >
                         {problem.difficulty}
-                    </span>
+                    </div>
 
                     <h1>
                         {problem.title}
@@ -92,141 +164,128 @@ function SolveProblemPage() {
 
             </header>
 
-            {/* Main */}
+            {/* =================================
+                MAIN
+            ================================= */}
+
             <main className="solve-layout">
 
-                {/* LEFT: Problem */}
+                {/* =================================
+                    LEFT PROBLEM
+                ================================= */}
+
                 <section className="solve-problem-panel">
 
-                    <div className="solve-section">
-                        <h2>
-                            Description
-                        </h2>
+                    <div className="solve-content">
 
-                        <p>
-                            {problem.description}
-                        </p>
+                        {problem.description && (
+                            <section>
+                                <h2>Description</h2>
+
+                                <p>
+                                    {problem.description}
+                                </p>
+                            </section>
+                        )}
+
+                        {problem.input_format && (
+                            <section>
+                                <h2>Input</h2>
+
+                                <pre>
+                                    {problem.input_format}
+                                </pre>
+                            </section>
+                        )}
+
+                        {problem.output_format && (
+                            <section>
+                                <h2>Output</h2>
+
+                                <pre>
+                                    {problem.output_format}
+                                </pre>
+                            </section>
+                        )}
+
+                        {problem.constraints && (
+                            <section>
+                                <h2>Constraints</h2>
+
+                                <pre>
+                                    {problem.constraints}
+                                </pre>
+                            </section>
+                        )}
+
+                        {problem.sample_input && (
+                            <section>
+
+                                <h2>Example</h2>
+
+                                <div className="solve-example">
+
+                                    <div>
+                                        <span>Input</span>
+
+                                        <pre>
+                                            {problem.sample_input}
+                                        </pre>
+                                    </div>
+
+                                    <div>
+                                        <span>Output</span>
+
+                                        <pre>
+                                            {problem.sample_output}
+                                        </pre>
+                                    </div>
+
+                                </div>
+
+                            </section>
+                        )}
+
+                        {problem.explanation && (
+                            <section>
+                                <h2>Explanation</h2>
+
+                                <p>
+                                    {problem.explanation}
+                                </p>
+                            </section>
+                        )}
+
                     </div>
-
-                    {problem.input_format && (
-                        <div className="solve-section">
-
-                            <h2>
-                                Input
-                            </h2>
-
-                            <pre>
-                                {problem.input_format}
-                            </pre>
-
-                        </div>
-                    )}
-
-                    {problem.output_format && (
-                        <div className="solve-section">
-
-                            <h2>
-                                Output
-                            </h2>
-
-                            <pre>
-                                {problem.output_format}
-                            </pre>
-
-                        </div>
-                    )}
-
-                    {problem.constraints && (
-                        <div className="solve-section">
-
-                            <h2>
-                                Constraints
-                            </h2>
-
-                            <pre>
-                                {problem.constraints}
-                            </pre>
-
-                        </div>
-                    )}
-
-                    {problem.sample_input && (
-                        <div className="solve-section">
-
-                            <h2>
-                                Example
-                            </h2>
-
-                            <div className="example-card">
-
-                                <div className="example-block">
-
-                                    <span>
-                                        Input
-                                    </span>
-
-                                    <pre>
-                                        {problem.sample_input}
-                                    </pre>
-
-                                </div>
-
-                                <div className="example-block">
-
-                                    <span>
-                                        Output
-                                    </span>
-
-                                    <pre>
-                                        {problem.sample_output}
-                                    </pre>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-                    )}
-
-                    {problem.explanation && (
-                        <div className="solve-section">
-
-                            <h2>
-                                Explanation
-                            </h2>
-
-                            <p>
-                                {problem.explanation}
-                            </p>
-
-                        </div>
-                    )}
 
                 </section>
 
-                {/* RIGHT: Editor */}
-                <section className="solve-editor-panel">
+                {/* =================================
+                    RIGHT
+                ================================= */}
 
-                    <div className="solve-editor-header">
-
-                        <div>
-                            <span className="editor-label">
-                                YOUR SOLUTION
-                            </span>
-
-                            <h2>
-                                Write your code
-                            </h2>
-                        </div>
-
-                        <span className="editor-hint">
-                            Run your code before submitting.
-                        </span>
-
-                    </div>
+                <section className="solve-right-panel">
 
                     <CodeEditor
                         problemId={problem.id}
+                        language={language}
+                        sourceCode={sourceCode}
+                        onLanguageChange={
+                            handleLanguageChange
+                        }
+                        onCodeChange={
+                            handleCodeChange
+                        }
+                        onResult={
+                            handleResult
+                        }
+                    />
+
+                    <AIAssistant
+                        problemId={problem.id}
+                        language={language}
+                        sourceCode={sourceCode}
+                        error={lastError}
                     />
 
                 </section>

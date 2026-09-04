@@ -29,48 +29,72 @@ int main() {
 `,
 };
 
-function CodeEditor({ problemId }) {
-    const [language, setLanguage] = useState("python");
-
-    const [sourceCode, setSourceCode] = useState(
-        starterCode.python
-    );
-
+function CodeEditor({
+    problemId,
+    language,
+    sourceCode,
+    onLanguageChange,
+    onCodeChange,
+    onResult,
+}) {
     const [status, setStatus] = useState("");
+
     const [output, setOutput] = useState("");
+
     const [error, setError] = useState("");
-    const [executionTime, setExecutionTime] = useState(null);
 
-    const [isRunning, setIsRunning] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [executionTime, setExecutionTime] =
+        useState(null);
 
-    const busy = isRunning || isSubmitting;
+    const [isRunning, setIsRunning] =
+        useState(false);
+
+    const [isSubmitting, setIsSubmitting] =
+        useState(false);
+
+    const busy =
+        isRunning || isSubmitting;
 
     const clearResult = () => {
         setStatus("");
         setOutput("");
         setError("");
         setExecutionTime(null);
+
+        if (onResult) {
+            onResult({
+                status: "",
+                output: "",
+                error: "",
+            });
+        }
     };
 
     const handleLanguageChange = (event) => {
-        const selectedLanguage = event.target.value;
+        const selectedLanguage =
+            event.target.value;
 
-        setLanguage(selectedLanguage);
-        setSourceCode(starterCode[selectedLanguage]);
+        onLanguageChange(
+            selectedLanguage
+        );
 
         clearResult();
     };
 
     const resetCode = () => {
-        setSourceCode(starterCode[language]);
+        onCodeChange(
+            starterCode[language]
+        );
 
         clearResult();
     };
 
     const runCode = async () => {
         if (!sourceCode.trim()) {
-            setError("Please write some code first.");
+            setError(
+                "Please write some code first."
+            );
+
             return;
         }
 
@@ -81,59 +105,75 @@ function CodeEditor({ problemId }) {
         setError("");
         setExecutionTime(null);
 
-        console.log("RUN REQUEST:", {
-            problem: problemId,
-            language,
-            source_code: sourceCode,
-        });
-
         try {
-            const response = await axiosClient.post(
-                "submissions/run/",
-                {
-                    problem: problemId,
-                    language: language,
-                    source_code: sourceCode,
-                }
+            const response =
+                await axiosClient.post(
+                    "submissions/run/",
+                    {
+                        problem: problemId,
+                        language,
+                        source_code:
+                            sourceCode,
+                    }
+                );
+
+            const data =
+                response.data;
+
+            setStatus(
+                data.status || ""
             );
 
-            console.log(
-                "RUN RESPONSE:",
-                response.data
+            setOutput(
+                data.output || ""
             );
 
-            const data = response.data;
-
-            setStatus(data.status || "");
-            setOutput(data.output || "");
-            setError(data.error || "");
+            setError(
+                data.error || ""
+            );
 
             setExecutionTime(
-                data.execution_time ?? null
+                data.execution_time ??
+                    null
             );
+
+            if (onResult) {
+                onResult(data);
+            }
 
         } catch (err) {
             console.error(
-                "RUN ERROR:",
+                "Run error:",
                 err
             );
 
+            const message =
+                err.response?.data
+                    ?.detail ||
+                "Unable to run your code.";
+
             setStatus("");
+            setError(message);
 
-            setError(
-                err.response?.data?.detail ||
-                "Unable to run your code."
-            );
+            if (onResult) {
+                onResult({
+                    status: "",
+                    output: "",
+                    error: message,
+                });
+            }
+
         } finally {
-            console.log("RUN FINISHED");
-
             setIsRunning(false);
         }
     };
 
     const submitCode = async () => {
         if (!sourceCode.trim()) {
-            setError("Please write some code first.");
+            setError(
+                "Please write some code first."
+            );
+
             return;
         }
 
@@ -144,68 +184,79 @@ function CodeEditor({ problemId }) {
         setError("");
         setExecutionTime(null);
 
-        console.log("SUBMIT REQUEST:", {
-            problem: problemId,
-            language,
-            source_code: sourceCode,
-        });
-
         try {
-            const response = await axiosClient.post(
-                "submissions/",
-                {
-                    problem: problemId,
-                    language: language,
-                    source_code: sourceCode,
-                }
+            const response =
+                await axiosClient.post(
+                    "submissions/",
+                    {
+                        problem: problemId,
+                        language,
+                        source_code:
+                            sourceCode,
+                    }
+                );
+
+            const data =
+                response.data;
+
+            setStatus(
+                data.status || ""
             );
 
-            console.log(
-                "SUBMIT RESPONSE:",
-                response.data
+            setOutput(
+                data.output || ""
             );
 
-            const data = response.data;
-
-            setStatus(data.status || "");
-            setOutput(data.output || "");
-            setError(data.error || "");
+            setError(
+                data.error || ""
+            );
 
             setExecutionTime(
-                data.execution_time ?? null
+                data.execution_time ??
+                    null
             );
+
+            if (onResult) {
+                onResult(data);
+            }
 
         } catch (err) {
             console.error(
-                "SUBMIT ERROR:",
+                "Submit error:",
                 err
             );
 
+            const message =
+                err.response?.data
+                    ?.detail ||
+                "Unable to submit your code.";
+
             setStatus("");
+            setError(message);
 
-            setError(
-                err.response?.data?.detail ||
-                "Unable to submit your code."
-            );
+            if (onResult) {
+                onResult({
+                    status: "",
+                    output: "",
+                    error: message,
+                });
+            }
+
         } finally {
-            console.log("SUBMIT FINISHED");
-
             setIsSubmitting(false);
         }
     };
 
     const getMonacoLanguage = () => {
-        switch (language) {
-            case "cpp":
-                return "cpp";
-
-            case "java":
-                return "java";
-
-            case "python":
-            default:
-                return "python";
+        if (language === "cpp") {
+            return "cpp";
         }
+
+        if (language === "java") {
+            return "java";
+        }
+
+        return "python";
     };
 
     const getStatusText = () => {
@@ -231,9 +282,14 @@ function CodeEditor({ problemId }) {
             default:
                 return status
                     ? status
-                          .replaceAll("_", " ")
-                          .replace(/\b\w/g, (char) =>
-                              char.toUpperCase()
+                          .replaceAll(
+                              "_",
+                              " "
+                          )
+                          .replace(
+                              /\b\w/g,
+                              (char) =>
+                                  char.toUpperCase()
                           )
                     : "";
         }
@@ -243,19 +299,24 @@ function CodeEditor({ problemId }) {
         <div className="code-editor-card">
 
             {/* Toolbar */}
+
             <div className="editor-toolbar">
 
                 <div className="editor-left-controls">
 
                     <div className="editor-tab">
+
                         <span className="editor-file-dot"></span>
 
                         solution
+
                     </div>
 
                     <select
                         value={language}
-                        onChange={handleLanguageChange}
+                        onChange={
+                            handleLanguageChange
+                        }
                         className="language-select"
                         disabled={busy}
                     >
@@ -311,17 +372,22 @@ function CodeEditor({ problemId }) {
 
             </div>
 
-            {/* Monaco Editor */}
+            {/* Monaco */}
+
             <div className="monaco-wrapper">
 
                 <Editor
                     height="500px"
-                    language={getMonacoLanguage()}
+                    language={
+                        getMonacoLanguage()
+                    }
                     theme="vs-dark"
                     value={sourceCode}
-                    onChange={(value) => {
-                        setSourceCode(value || "");
-                    }}
+                    onChange={(value) =>
+                        onCodeChange(
+                            value || ""
+                        )
+                    }
                     options={{
                         fontSize: 14,
                         minimap: {
@@ -331,9 +397,11 @@ function CodeEditor({ problemId }) {
                         tabSize: 4,
                         insertSpaces: true,
                         wordWrap: "on",
-                        scrollBeyondLastLine: false,
+                        scrollBeyondLastLine:
+                            false,
                         lineNumbers: "on",
-                        cursorBlinking: "smooth",
+                        cursorBlinking:
+                            "smooth",
                         padding: {
                             top: 16,
                             bottom: 16,
@@ -343,7 +411,8 @@ function CodeEditor({ problemId }) {
 
             </div>
 
-            {/* Result */}
+            {/* Results */}
+
             <div className="result-panel">
 
                 <div className="result-header">
@@ -362,7 +431,6 @@ function CodeEditor({ problemId }) {
 
                 </div>
 
-                {/* Accepted */}
                 {status === "accepted" && (
                     <div className="success-result">
 
@@ -371,13 +439,18 @@ function CodeEditor({ problemId }) {
                         </div>
 
                         <div>
+
                             <strong>
                                 All test cases passed
                             </strong>
 
-                            {executionTime !== null && (
+                            {executionTime !==
+                                null && (
                                 <span>
-                                    {executionTime.toFixed(3)}s
+                                    {executionTime.toFixed(
+                                        3
+                                    )}
+                                    s
                                 </span>
                             )}
 
@@ -386,7 +459,6 @@ function CodeEditor({ problemId }) {
                     </div>
                 )}
 
-                {/* Wrong Answer */}
                 {status === "wrong_answer" && (
                     <div className="wrong-result">
 
@@ -403,10 +475,11 @@ function CodeEditor({ problemId }) {
                     </div>
                 )}
 
-                {/* Other output */}
                 {output &&
-                    status !== "accepted" &&
-                    status !== "wrong_answer" && (
+                    status !==
+                        "accepted" &&
+                    status !==
+                        "wrong_answer" && (
                         <div className="result-output">
 
                             <span>
@@ -420,7 +493,6 @@ function CodeEditor({ problemId }) {
                         </div>
                     )}
 
-                {/* Error */}
                 {error && (
                     <div className="result-error">
 
@@ -432,10 +504,9 @@ function CodeEditor({ problemId }) {
                             {error}
                         </pre>
 
-                    </div>
+                        </div>
                 )}
 
-                {/* Empty */}
                 {!status &&
                     !output &&
                     !error && (

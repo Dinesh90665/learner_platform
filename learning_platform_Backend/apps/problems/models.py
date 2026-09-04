@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 # Create your models here.
 
@@ -60,9 +61,6 @@ class Problem(models.Model):
     def __str__(self):
         return self.title
     
-
-
-
 class TestCase(models.Model):
     problem = models.ForeignKey(
         Problem,
@@ -83,3 +81,34 @@ class TestCase(models.Model):
 
     def __str__(self):
         return f"{self.problem.title} - Test Case {self.id}"
+    
+
+
+class FavoriteProblem(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="favorite_problems",
+    )
+
+    problem = models.ForeignKey(
+        "Problem",
+        on_delete=models.CASCADE,
+        related_name="favorited_by",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "problem"],
+                name="unique_user_favorite_problem",
+            )
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.problem.title}"

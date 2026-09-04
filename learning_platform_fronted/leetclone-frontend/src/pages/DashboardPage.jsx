@@ -5,47 +5,144 @@ import "../styles/DashboardPage.css";
 
 function DashboardPage() {
     const [dashboard, setDashboard] = useState(null);
+    const [streak, setStreak] = useState({
+        current_streak: 0,
+        longest_streak: 0,
+        last_solved_date: null,
+    });
+
     const [loading, setLoading] = useState(true);
+    const [streakLoading, setStreakLoading] = useState(true);
     const [error, setError] = useState("");
 
     useEffect(() => {
         fetchDashboard();
+        fetchStreak();
     }, []);
+
+    /* =========================================
+       DASHBOARD
+    ========================================= */
 
     const fetchDashboard = async () => {
         try {
+            setLoading(true);
+            setError("");
+
             const response = await axiosClient.get(
                 "submissions/dashboard/"
             );
 
             setDashboard(response.data);
         } catch (err) {
-            console.error(err);
+            console.error(
+                "Dashboard error:",
+                err
+            );
 
             if (err.response?.status === 401) {
-                setError("Your session has expired. Please log in again.");
+                setError(
+                    "Your session has expired. Please log in again."
+                );
             } else {
-                setError("Unable to load dashboard.");
+                setError(
+                    "Unable to load dashboard."
+                );
             }
         } finally {
             setLoading(false);
         }
     };
 
+    /* =========================================
+       STREAK
+    ========================================= */
+
+    const fetchStreak = async () => {
+        try {
+            setStreakLoading(true);
+
+            const response = await axiosClient.get(
+                "users/streak/"
+            );
+
+            setStreak(
+                response.data || {
+                    current_streak: 0,
+                    longest_streak: 0,
+                    last_solved_date: null,
+                }
+            );
+        } catch (err) {
+            console.error(
+                "Streak error:",
+                err
+            );
+
+            // Don't break the dashboard
+            // if the streak endpoint fails.
+            setStreak({
+                current_streak: 0,
+                longest_streak: 0,
+                last_solved_date: null,
+            });
+        } finally {
+            setStreakLoading(false);
+        }
+    };
+
+    /* =========================================
+       FORMATTERS
+    ========================================= */
+
     const formatDate = (date) => {
-        return new Date(date).toLocaleString();
+        if (!date) {
+            return "—";
+        }
+
+        const parsedDate = new Date(date);
+
+        if (Number.isNaN(parsedDate.getTime())) {
+            return date;
+        }
+
+        return parsedDate.toLocaleString();
+    };
+
+    const formatSolvedDate = (date) => {
+        if (!date) {
+            return "No problem solved yet";
+        }
+
+        const parsedDate = new Date(`${date}T00:00:00`);
+
+        if (Number.isNaN(parsedDate.getTime())) {
+            return date;
+        }
+
+        return parsedDate.toLocaleDateString(
+            undefined,
+            {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+            }
+        );
     };
 
     const getLanguageName = (language) => {
         switch (language) {
             case "cpp":
                 return "C++";
+
             case "java":
                 return "Java";
+
             case "python":
                 return "Python";
+
             default:
-                return language;
+                return language || "—";
         }
     };
 
@@ -71,69 +168,132 @@ function DashboardPage() {
         switch (status) {
             case "accepted":
                 return "Accepted";
+
             case "wrong_answer":
                 return "Wrong Answer";
+
             case "runtime_error":
                 return "Runtime Error";
+
             case "compilation_error":
                 return "Compilation Error";
+
             case "time_limit":
                 return "Time Limit";
+
             default:
-                return status.replaceAll("_", " ");
+                return status
+                    ? status
+                          .replaceAll("_", " ")
+                          .replace(
+                              /\b\w/g,
+                              (char) =>
+                                  char.toUpperCase()
+                          )
+                    : "Unknown";
         }
     };
+
+    /* =========================================
+       LOADING
+    ========================================= */
 
     if (loading) {
         return (
             <div className="dashboard-loading">
+
                 <div className="dashboard-spinner"></div>
-                <p>Loading dashboard...</p>
+
+                <p>
+                    Loading dashboard...
+                </p>
+
             </div>
         );
     }
+
+    /* =========================================
+       ERROR
+    ========================================= */
 
     if (error) {
         return (
             <div className="dashboard-error-page">
-                <h2>{error}</h2>
+
+                <h2>
+                    {error}
+                </h2>
 
                 <Link to="/login">
                     Go to Login
                 </Link>
+
             </div>
         );
     }
 
-    const stats = dashboard.statistics;
-    const difficulty = dashboard.difficulty;
+    /* =========================================
+       SAFE DATA
+    ========================================= */
+
+    const stats =
+        dashboard?.statistics || {
+            solved_problems: 0,
+            total_submissions: 0,
+            accepted_submissions: 0,
+            wrong_answers: 0,
+            success_rate: 0,
+        };
+
+    const difficulty =
+        dashboard?.difficulty || {
+            easy: 0,
+            medium: 0,
+            hard: 0,
+        };
+
+    const recentSubmissions =
+        dashboard?.recent_submissions || [];
 
     const totalSolved =
-        difficulty.easy +
-        difficulty.medium +
-        difficulty.hard;
+        Number(difficulty.easy || 0) +
+        Number(difficulty.medium || 0) +
+        Number(difficulty.hard || 0);
+
+    const currentStreak =
+        Number(streak.current_streak || 0);
+
+    const longestStreak =
+        Number(streak.longest_streak || 0);
 
     return (
         <div className="dashboard-page">
 
             <div className="dashboard-container">
 
-                {/* Header */}
+                {/* =================================
+                    HEADER
+                ================================= */}
+
                 <div className="dashboard-header">
 
                     <div>
+
                         <p className="dashboard-label">
                             OVERVIEW
                         </p>
 
                         <h1>
-                            Welcome back, {dashboard.username} 👋
+                            Welcome back,{" "}
+                            {dashboard.username} 👋
                         </h1>
 
                         <p className="dashboard-subtitle">
-                            Keep practicing and build your programming
-                            skills one problem at a time.
+                            Keep practicing and build your
+                            programming skills one problem
+                            at a time.
                         </p>
+
                     </div>
 
                     <Link
@@ -145,7 +305,10 @@ function DashboardPage() {
 
                 </div>
 
-                {/* Statistics */}
+                {/* =================================
+                    MAIN STATISTICS
+                ================================= */}
+
                 <div className="dashboard-stats">
 
                     <div className="dashboard-stat-card">
@@ -222,10 +385,94 @@ function DashboardPage() {
 
                 </div>
 
-                {/* Main dashboard grid */}
+                {/* =================================
+                    STREAK
+                ================================= */}
+
+                <section className="dashboard-streak-card">
+
+                    <div className="dashboard-streak-main">
+
+                        <div className="dashboard-streak-icon">
+                            🔥
+                        </div>
+
+                        <div>
+
+                            <p className="dashboard-streak-label">
+                                CURRENT STREAK
+                            </p>
+
+                            <div className="dashboard-streak-number">
+                                {streakLoading
+                                    ? "..."
+                                    : currentStreak}
+                            </div>
+
+                            <span className="dashboard-streak-days">
+                                {currentStreak === 1
+                                    ? "day"
+                                    : "days"}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div className="dashboard-streak-divider"></div>
+
+                    <div className="dashboard-streak-info">
+
+                        <div>
+                            <span>
+                                Longest streak
+                            </span>
+
+                            <strong>
+                                {streakLoading
+                                    ? "..."
+                                    : `${longestStreak} ${
+                                          longestStreak ===
+                                          1
+                                              ? "day"
+                                              : "days"
+                                      }`}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>
+                                Last solved
+                            </span>
+
+                            <strong>
+                                {streakLoading
+                                    ? "..."
+                                    : formatSolvedDate(
+                                          streak.last_solved_date
+                                      )}
+                            </strong>
+                        </div>
+
+                    </div>
+
+                    <Link
+                        to="/problems"
+                        className="dashboard-streak-button"
+                    >
+                        Keep the streak →
+                    </Link>
+
+                </section>
+
+                {/* =================================
+                    MAIN GRID
+                ================================= */}
+
                 <div className="dashboard-grid">
 
                     {/* Difficulty */}
+
                     <section className="dashboard-card">
 
                         <div className="dashboard-card-header">
@@ -236,7 +483,8 @@ function DashboardPage() {
                                 </h2>
 
                                 <p>
-                                    Your solved problems by difficulty.
+                                    Your solved problems
+                                    by difficulty.
                                 </p>
                             </div>
 
@@ -247,6 +495,7 @@ function DashboardPage() {
                         </div>
 
                         <div className="difficulty-total">
+
                             <strong>
                                 {totalSolved}
                             </strong>
@@ -254,6 +503,7 @@ function DashboardPage() {
                             <span>
                                 total solved
                             </span>
+
                         </div>
 
                         <div className="difficulty-bars">
@@ -261,6 +511,7 @@ function DashboardPage() {
                             <div className="difficulty-row">
 
                                 <div className="difficulty-row-head">
+
                                     <span className="difficulty-name easy-text">
                                         Easy
                                     </span>
@@ -268,9 +519,11 @@ function DashboardPage() {
                                     <strong>
                                         {difficulty.easy}
                                     </strong>
+
                                 </div>
 
                                 <div className="progress-track">
+
                                     <div
                                         className="progress-fill easy-fill"
                                         style={{
@@ -283,6 +536,7 @@ function DashboardPage() {
                                             }%`,
                                         }}
                                     ></div>
+
                                 </div>
 
                             </div>
@@ -290,6 +544,7 @@ function DashboardPage() {
                             <div className="difficulty-row">
 
                                 <div className="difficulty-row-head">
+
                                     <span className="difficulty-name medium-text">
                                         Medium
                                     </span>
@@ -297,9 +552,11 @@ function DashboardPage() {
                                     <strong>
                                         {difficulty.medium}
                                     </strong>
+
                                 </div>
 
                                 <div className="progress-track">
+
                                     <div
                                         className="progress-fill medium-fill"
                                         style={{
@@ -312,6 +569,7 @@ function DashboardPage() {
                                             }%`,
                                         }}
                                     ></div>
+
                                 </div>
 
                             </div>
@@ -319,6 +577,7 @@ function DashboardPage() {
                             <div className="difficulty-row">
 
                                 <div className="difficulty-row-head">
+
                                     <span className="difficulty-name hard-text">
                                         Hard
                                     </span>
@@ -326,9 +585,11 @@ function DashboardPage() {
                                     <strong>
                                         {difficulty.hard}
                                     </strong>
+
                                 </div>
 
                                 <div className="progress-track">
+
                                     <div
                                         className="progress-fill hard-fill"
                                         style={{
@@ -341,6 +602,7 @@ function DashboardPage() {
                                             }%`,
                                         }}
                                     ></div>
+
                                 </div>
 
                             </div>
@@ -349,7 +611,8 @@ function DashboardPage() {
 
                     </section>
 
-                    {/* Success Rate */}
+                    {/* Accuracy */}
+
                     <section className="dashboard-card">
 
                         <div className="dashboard-card-header">
@@ -360,7 +623,8 @@ function DashboardPage() {
                                 </h2>
 
                                 <p>
-                                    How often your submissions succeed.
+                                    How often your
+                                    submissions succeed.
                                 </p>
                             </div>
 
@@ -371,11 +635,11 @@ function DashboardPage() {
                             <div
                                 className="accuracy-ring"
                                 style={{
-                                    "--accuracy":
-                                        `${stats.success_rate}%`,
+                                    "--accuracy": `${stats.success_rate}%`,
                                 }}
                             >
                                 <div className="accuracy-ring-inner">
+
                                     <strong>
                                         {stats.success_rate}%
                                     </strong>
@@ -383,27 +647,40 @@ function DashboardPage() {
                                     <span>
                                         Success
                                     </span>
+
                                 </div>
+
                             </div>
 
                             <div className="accuracy-details">
 
                                 <div>
-                                    <span>Accepted</span>
+                                    <span>
+                                        Accepted
+                                    </span>
+
                                     <strong>
-                                        {stats.accepted_submissions}
+                                        {
+                                            stats.accepted_submissions
+                                        }
                                     </strong>
                                 </div>
 
                                 <div>
-                                    <span>Wrong</span>
+                                    <span>
+                                        Wrong
+                                    </span>
+
                                     <strong>
                                         {stats.wrong_answers}
                                     </strong>
                                 </div>
 
                                 <div>
-                                    <span>Total</span>
+                                    <span>
+                                        Total
+                                    </span>
+
                                     <strong>
                                         {stats.total_submissions}
                                     </strong>
@@ -417,7 +694,10 @@ function DashboardPage() {
 
                 </div>
 
-                {/* Recent submissions */}
+                {/* =================================
+                    RECENT SUBMISSIONS
+                ================================= */}
+
                 <section className="dashboard-card recent-submissions">
 
                     <div className="dashboard-card-header">
@@ -438,7 +718,7 @@ function DashboardPage() {
 
                     </div>
 
-                    {dashboard.recent_submissions.length === 0 ? (
+                    {recentSubmissions.length === 0 ? (
                         <div className="dashboard-empty">
 
                             <div className="dashboard-empty-icon">
@@ -450,8 +730,8 @@ function DashboardPage() {
                             </h3>
 
                             <p>
-                                Solve your first problem to see your
-                                activity here.
+                                Solve your first problem
+                                to see your activity here.
                             </p>
 
                             <Link to="/problems">
@@ -463,31 +743,53 @@ function DashboardPage() {
                         <div className="recent-table">
 
                             <div className="recent-table-head">
-                                <span>Problem</span>
-                                <span>Language</span>
-                                <span>Status</span>
-                                <span>Time</span>
-                                <span>Date</span>
+                                <span>
+                                    Problem
+                                </span>
+
+                                <span>
+                                    Language
+                                </span>
+
+                                <span>
+                                    Status
+                                </span>
+
+                                <span>
+                                    Time
+                                </span>
+
+                                <span>
+                                    Date
+                                </span>
                             </div>
 
-                            {dashboard.recent_submissions.map(
+                            {recentSubmissions.map(
                                 (submission) => (
                                     <div
                                         className="recent-row"
-                                        key={submission.id}
+                                        key={
+                                            submission.id
+                                        }
                                     >
 
                                         <div className="recent-problem">
+
                                             <Link
                                                 to={`/problems/${submission.problem_slug}`}
                                             >
-                                                {submission.problem}
+                                                {
+                                                    submission.problem
+                                                }
                                             </Link>
 
                                             <small>
                                                 Submission #
-                                                {submission.id}
+                                                {
+                                                    submission.id
+                                                }
                                             </small>
+
                                         </div>
 
                                         <div className="recent-language">
@@ -497,6 +799,7 @@ function DashboardPage() {
                                         </div>
 
                                         <div>
+
                                             <span
                                                 className={getStatusClass(
                                                     submission.status
@@ -506,21 +809,28 @@ function DashboardPage() {
                                                     submission.status
                                                 )}
                                             </span>
+
                                         </div>
 
                                         <div className="recent-time">
+
                                             {submission.execution_time !==
-                                            null
-                                                ? `${submission.execution_time.toFixed(
-                                                      3
-                                                  )}s`
+                                            null &&
+                                            submission.execution_time !==
+                                                undefined
+                                                ? `${Number(
+                                                      submission.execution_time
+                                                  ).toFixed(3)}s`
                                                 : "—"}
+
                                         </div>
 
                                         <div className="recent-date">
+
                                             {formatDate(
                                                 submission.created_at
                                             )}
+
                                         </div>
 
                                     </div>
