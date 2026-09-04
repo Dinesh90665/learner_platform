@@ -142,7 +142,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 ALLOWED_HOSTS = [
-    "learner-platform-1.onrender.com",
+    "learner-platform-3.onrender.com",
 ]
 
 
