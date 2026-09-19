@@ -38,7 +38,7 @@ DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 #     for host in os.getenv("ALLOWED_HOSTS", "").split(",")
 #     if host.strip()
 # ]
-
+CORS_ALLOW_ALL_ORIGINS = True
 ALLOWED_HOSTS = ["*"]
 # ---------------------------------------------------------
 # APPLICATIONS
@@ -205,10 +205,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # React/Vite development server
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:5173",
+#     "http://127.0.0.1:5173",
+# ]
 
 
 # ---------------------------------------------------------
