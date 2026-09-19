@@ -20,13 +20,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!mey9sg#esbn^_7k#bjhf*$s%d2@1_0)^2=j8-6-m=s)8wk(-k'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+SECRET_KEY = os.getenv("SECRET_KEY")
 
-ALLOWED_HOSTS = []
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv("ALLOWED_HOSTS", "").split(",")
+    if host.strip()
+]
 import os
 from dotenv import load_dotenv
 
@@ -94,12 +99,17 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # }
 
 
+DATABASES = {
+    "default": dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+    )
+}
 
 
 
-
-import config
-from decouple import config
+# import config
+# from decouple import config
 
 # DATABASES = {
 #     "default": {
@@ -112,15 +122,15 @@ from decouple import config
 #     }
 # }
 
-from decouple import config
-import dj_database_url
+# from decouple import config
+# import dj_database_url
 
-DATABASES = {
-    "default": dj_database_url.parse(
-        config("DATABASE_URL"),
-        conn_max_age=600,
-    )
-}
+# DATABASES = {
+#     "default": dj_database_url.parse(
+#         config("DATABASE_URL"),
+#         conn_max_age=600,
+#     )
+# }
 
 
 
@@ -175,12 +185,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-      "https://learner-platform.vercel.app",
 ]
 
-ALLOWED_HOSTS = [
-    "learner-platform-3.onrender.com",
-]
 
 
 REST_FRAMEWORK = {
